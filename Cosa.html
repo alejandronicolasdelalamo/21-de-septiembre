@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestro Universo de Girasoles 🌻</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- GSAP para animaciones suaves -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Fuentes Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #05020a;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+        }
+        .font-cursive {
+            font-family: 'Dancing Script', cursive;
+        }
+        .glass-panel {
+            background: rgba(18, 10, 28, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(255, 180, 0, 0.15);
+        }
+        .glow-text {
+            text-shadow: 0 0 12px rgba(255, 215, 0, 0.6), 0 0 24px rgba(255, 165, 0, 0.4);
+        }
+        .rotate-vinyl {
+            animation: spin 8s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+        /* Ocultar scrollbar */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="w-screen h-screen relative">
+
+    <!-- CANVAS THREE.JS -->
+    <div id="canvas-container" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
+
+    <!-- PANTALLA DE BIENVENIDA / INTRO MODAL -->
+    <div id="intro-screen" class="fixed inset-0 z-50 flex items-center justify-center glass-panel transition-opacity duration-700 p-4">
+        <div class="text-center max-w-md mx-auto space-y-6">
+            <div class="inline-block p-4 rounded-full bg-amber-500/10 border border-amber-400/30 animate-pulse">
+                <span class="text-6xl">🌻</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold font-cursive text-amber-300 glow-text">
+                Para la flor más hermosa de mi universo
+            </h1>
+            <p class="text-amber-100/80 text-sm md:text-base leading-relaxed">
+                Un rincón en el espacio dedicado a ti en este 21 de Septiembre. Toca el botón para encender las estrellas y la música.
+            </p>
+            <button id="btn-enter" class="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-semibold shadow-lg shadow-amber-500/30 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2 mx-auto">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <span>Entrar al Universo</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- CAPA UI / INTERFAZ PRINCIPAL -->
+    <div id="ui-overlay" class="fixed inset-0 z-10 pointer-events-none flex flex-col justify-between p-6 opacity-0 transition-opacity duration-1000">
+        
+        <!-- HEADER -->
+        <header class="flex justify-between items-start pointer-events-auto">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-cursive font-bold text-amber-300 glow-text">21 de Septiembre 🌻</h2>
+                <p class="text-xs text-amber-200/60 uppercase tracking-widest mt-1">Nuestro Universo Infinito</p>
+            </div>
+            
+            <!-- Botón Reiniciar Cámara -->
+            <button id="btn-reset-cam" class="p-3 rounded-full glass-panel text-amber-300 hover:bg-amber-500/20 transition flex items-center gap-2 text-xs font-semibold" title="Restablecer Vista">
+                <i data-lucide="compass" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Centrar Universo</span>
+            </button>
+        </header>
+
+        <!-- INDICADOR INFERIOR DE INSTRUCCIONES -->
+        <div class="text-center pointer-events-none mb-20 md:mb-6">
+            <p class="text-xs md:text-sm text-amber-200/70 bg-amber-950/40 backdrop-blur-md px-4 py-2 rounded-full inline-block border border-amber-500/20 animate-bounce">
+                ✨ Haz clic en cualquier girasol o foto para explorar los recuerdos ✨
+            </p>
+        </div>
+
+        <!-- REPRODUCTOR DE MÚSICA FLOTANTE -->
+        <div class="fixed bottom-6 right-6 pointer-events-auto z-20">
+            <div class="glass-panel p-3 rounded-2xl flex items-center gap-3">
+                <div id="vinyl-disc" class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center shadow-md">
+                    <i data-lucide="music" class="w-5 h-5 text-slate-950"></i>
+                </div>
+                <div class="hidden sm:block text-left pr-2">
+                    <p id="song-title" class="text-xs font-semibold text-amber-200">Melodía Romántica</p>
+                    <p class="text-[10px] text-amber-400/60">Especial 21 de Septiembre</p>
+                </div>
+                <button id="btn-play-pause" class="p-2 rounded-full bg-amber-400 text-slate-950 hover:bg-amber-300 transition">
+                    <i data-lucide="play" id="icon-play" class="w-4 h-4 fill-current"></i>
+                    <i data-lucide="pause" id="icon-pause" class="w-4 h-4 fill-current hidden"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE MENSAJE O FOTO AL HACER CLIC EN UN ELEMENTO 3D -->
+    <div id="card-modal" class="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-500">
+        <div class="glass-panel p-6 md:p-8 rounded-3xl max-w-md w-full relative border border-amber-400/40 text-center space-y-4 transform scale-90 transition-transform duration-500" id="modal-content">
+            <button id="btn-close-modal" class="absolute top-4 right-4 text-amber-300/70 hover:text-amber-300 p-2">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div id="modal-image-container" class="w-full h-48 rounded-2xl overflow-hidden border border-amber-500/30 hidden">
+                <img id="modal-image" src="" alt="Recuerdo" class="w-full h-full object-cover">
+            </div>
+
+            <div class="space-y-2">
+                <span class="text-3xl">🌻</span>
+                <h3 id="modal-title" class="text-2xl font-bold font-cursive text-amber-300 glow-text"></h3>
+                <p id="modal-text" class="text-amber-100/90 text-sm leading-relaxed font-light"></p>
+            </div>
+            
+            <div class="pt-2">
+                <button id="btn-modal-action" class="text-xs text-amber-400 hover:text-amber-200 underline tracking-wide">
+                    Volver a explorar las estrellas
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO ELEMENT DE RESPALDO / REPRODUCCIÓN -->
+    <!-- Reproductor YouTube (oculto en offscreen para permitir reproducción) -->
+    <div id="youtube-player" style="width:0;height:0;position:absolute;left:-9999px;overflow:hidden"></div>
+
+    <!-- SCRIPT TÉCNICO Y ESCENA 3D -->
+    <script>
+        // Lucide Icons Init
+        lucide.createIcons();
+
+        // --- DATOS PERSONALIZABLES DE LOS GIRASOLES Y TARJETAS ---
+        // PUEDES MODIFICAR LOS TEXTOS Y LAS IMÁGENES AQUÍ:
+        const MEMORIES = [
+            {
+                title: "Tú Eres Mi Girasol",
+                text: "Como los girasoles buscan la luz del sol, mi corazón siempre busca la tuya en medio de cualquier oscuridad.",
+                img: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "21 de Septiembre",
+                text: "Hoy el mundo se llena de flores amarillas, pero ninguna brilla con la intensidad y belleza que hay en tus ojos.",
+                img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "Universo Infinito",
+                text: "Si contara cada estrella de este espacio, aún me faltarían números para expresar lo mucho que me importas.",
+                img: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "Mi Momento Favorito",
+                text: "Cualquier instante a tu lado se convierte automáticamente en el recuerdo más hermoso de mi vida.",
+                img: "https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                title: "Promesa Eterna",
+                text: "Prometo regalarte flores amarillas no solo este 21 de septiembre, sino cada día de nuestras vidas.",
+                img: "https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&w=600&q=80"
+            }
+        ];
+
+        // --- CONFIGURACIÓN THREE.JS ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x05020a, 0.015);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const initialCamPos = new THREE.Vector3(0, 5, 25);
+        camera.position.copy(initialCamPos);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 45;
+        controls.minDistance = 5;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.6;
+
+        // --- ILUMINACIÓN CÁLIDA Y ROMÁNTICA ---
+        const ambientLight = new THREE.AmbientLight(0xffeedd, 0.8);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xffd700, 1.5);
+        sunLight.position.set(10, 20, 10);
+        scene.add(sunLight);
+
+        const pointLight = new THREE.PointLight(0xffaa00, 2, 30);
+        pointLight.position.set(0, 0, 0);
+        scene.add(pointLight);
+
+        // --- CREACIÓN DEL SISTEMA DE ESTRELLAS Y POLVO CÓSMICO ---
+        function createStarfield() {
+            const starCount = 3500;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+
+            const colorPalette = [
+                new THREE.Color(0xffd700), // Dorado
+                new THREE.Color(0xffffff), // Blanco
+                new THREE.Color(0xffa500), // Ámbar
+                new THREE.Color(0xfffdd0)  // Crema
+            ];
+
+            for (let i = 0; i < starCount; i++) {
+                const r = THREE.MathUtils.randFloat(10, 90);
+                const theta = THREE.MathUtils.randFloat(0, Math.PI * 2);
+                const phi = THREE.MathUtils.randFloat(0, Math.PI);
+
+                positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                positions[i * 3 + 2] = r * Math.cos(phi);
+
+                const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.15,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.85
+            });
+
+            const starMesh = new THREE.Points(geometry, material);
+            scene.add(starMesh);
+            return starMesh;
+        }
+        const stars = createStarfield();
+
+        // --- CONSTRUCTOR PROCEDURAL DE GIRASOL 3D ---
+        function createSunflowerMesh() {
+            const group = new THREE.Group();
+
+            // Centro del girasol (Disco semillero)
+            const centerGeo = new THREE.CylinderGeometry(0.8, 0.8, 0.2, 32);
+            const centerMat = new THREE.MeshStandardMaterial({ 
+                color: 0x3d1e03, 
+                roughness: 0.9, 
+                bumpScale: 0.05 
+            });
+            const center = new THREE.Mesh(centerGeo, centerMat);
+            center.rotation.x = Math.PI / 2;
+            group.add(center);
+
+            // Pétalos Amarillos
+            const petalCount = 18;
+            const petalGeo = new THREE.ConeGeometry(0.25, 1.2, 8);
+            petalGeo.translate(0, 0.6, 0);
+            const petalMat = new THREE.MeshStandardMaterial({ 
+                color: 0xffd700, 
+                roughness: 0.3,
+                metalness: 0.1,
+                emissive: 0x332200
+            });
+
+            for (let i = 0; i < petalCount; i++) {
+                const angle = (i / petalCount) * Math.PI * 2;
+                const petal = new THREE.Mesh(petalGeo, petalMat);
+                petal.rotation.z = angle;
+                petal.rotation.x = Math.PI / 2;
+                petal.position.x = Math.cos(angle) * 0.85;
+                petal.position.y = Math.sin(angle) * 0.85;
+                group.add(petal);
+            }
+
+            // Tallo Verde
+            const stemGeo = new THREE.CylinderGeometry(0.08, 0.08, 3, 16);
+            const stemMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.6 });
+            const stem = new THREE.Mesh(stemGeo, stemMat);
+            stem.position.set(0, -1.5, -0.2);
+            stem.rotation.x = 0.2;
+            group.add(stem);
+
+            return group;
+        }
+
+        // --- CREAR TARJETAS Y GIRASOLES EN EL ESPACIO 3D ---
+        const interactiveObjects = [];
+        const textureLoader = new THREE.TextureLoader();
+
+        MEMORIES.forEach((memory, index) => {
+            const pivot = new THREE.Group();
+            
+            // Ángulo y posición en espiral alrededor del centro
+            const angle = (index / MEMORIES.length) * Math.PI * 2;
+            const radius = 12 + (index % 2) * 3;
+            const x = Math.cos(angle) * radius;
+            const y = (index - 2) * 2.5;
+            const z = Math.sin(angle) * radius;
+
+            pivot.position.set(x, y, z);
+
+            // Agregar Girasol 3D
+            const sunflower = createSunflowerMesh();
+            sunflower.scale.set(1.2, 1.2, 1.2);
+            pivot.add(sunflower);
+
+            // Agregar Foto Flotante en Marco 3D
+            textureLoader.load(memory.img, (texture) => {
+                const photoGeo = new THREE.PlaneGeometry(2.4, 1.8);
+                const photoMat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+                const photoMesh = new THREE.Mesh(photoGeo, photoMat);
+                photoMesh.position.set(0, 2.2, 0);
+
+                // Marco dorado con resplandor
+                const frameGeo = new THREE.PlaneGeometry(2.55, 1.95);
+                const frameMat = new THREE.MeshBasicMaterial({ color: 0xffd700, side: THREE.DoubleSide });
+                const frameMesh = new THREE.Mesh(frameGeo, frameMat);
+                frameMesh.position.set(0, 2.2, -0.02);
+
+                pivot.add(photoMesh);
+                pivot.add(frameMesh);
+            });
+
+            // Asignar metadatos para la interacción con Raycaster
+            pivot.userData = { 
+                memory: memory,
+                initialY: y,
+                floatOffset: index * 1.2
+            };
+
+            scene.add(pivot);
+            interactiveObjects.push(pivot);
+        });
+
+        // --- MANEJO DE RAYCASTING (CLIC EN OBJETOS 3D) ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        function onPointerDown(event) {
+            // Prevenir clic accidental al arrastrar la cámara
+            let isDragging = false;
+            const onPointerMove = () => { isDragging = true; };
+            
+            window.addEventListener('pointermove', onPointerMove, { once: true });
+            
+            window.addEventListener('pointerup', (e) => {
+                if (!isDragging) {
+                    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                    raycaster.setFromCamera(mouse, camera);
+                    
+                    // Comprobar colisión con los grupos de girasoles
+                    const intersects = raycaster.intersectObjects(scene.children, true);
+
+                    if (intersects.length > 0) {
+                        let targetGroup = intersects[0].object;
+                        while (targetGroup.parent && targetGroup.parent !== scene) {
+                            targetGroup = targetGroup.parent;
+                        }
+
+                        if (targetGroup.userData && targetGroup.userData.memory) {
+                            focusOnObject(targetGroup);
+                        }
+                    }
+                }
+            }, { once: true });
+        }
+        window.addEventListener('pointerdown', onPointerDown);
+
+        // --- ANIMACIÓN DE CÁMARA HACIA EL ELEMENTO SELECCIONADO (GSAP) ---
+        function focusOnObject(group) {
+            controls.autoRotate = false;
+            const targetPos = group.position;
+            
+            // Posición de cámara enfocada frente al objeto
+            const camTargetX = targetPos.x * 0.7;
+            const camTargetY = targetPos.y + 1;
+            const camTargetZ = targetPos.z * 0.7 + 4;
+
+            gsap.to(camera.position, {
+                x: camTargetX,
+                y: camTargetY,
+                z: camTargetZ,
+                duration: 2,
+                ease: "power2.inOut"
+            });
+
+            gsap.to(controls.target, {
+                x: targetPos.x,
+                y: targetPos.y,
+                z: targetPos.z,
+                duration: 2,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    showModal(group.userData.memory);
+                }
+            });
+        }
+
+        // --- MANEJO DEL MODAL Y UI ---
+        const modal = document.getElementById('card-modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+        const modalImg = document.getElementById('modal-image');
+        const modalImgContainer = document.getElementById('modal-image-container');
+
+        function showModal(data) {
+            modalTitle.innerText = data.title;
+            modalText.innerText = data.text;
+            if (data.img) {
+                modalImg.src = data.img;
+                modalImgContainer.classList.remove('hidden');
+            } else {
+                modalImgContainer.classList.add('hidden');
+            }
+
+            modal.classList.remove('pointer-events-none');
+            modal.classList.add('opacity-100');
+            modalContent.classList.remove('scale-90');
+            modalContent.classList.add('scale-100');
+        }
+
+        function closeModal() {
+            modal.classList.add('pointer-events-none');
+            modal.classList.remove('opacity-100');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-90');
+        }
+
+        document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+        document.getElementById('btn-modal-action').addEventListener('click', () => {
+            closeModal();
+            resetCamera();
+        });
+
+        function resetCamera() {
+            controls.autoRotate = true;
+            gsap.to(camera.position, {
+                x: initialCamPos.x,
+                y: initialCamPos.y,
+                z: initialCamPos.z,
+                duration: 2,
+                ease: "power2.inOut"
+            });
+            gsap.to(controls.target, {
+                x: 0,
+                y: 0,
+                z: 0,
+                duration: 2,
+                ease: "power2.inOut"
+            });
+        }
+        document.getElementById('btn-reset-cam').addEventListener('click', resetCamera);
+
+        // --- REPRODUCTOR DE MÚSICA Y BIENVENIDA (YouTube IFrame Player) ---
+        const btnEnter = document.getElementById('btn-enter');
+        const introScreen = document.getElementById('intro-screen');
+        const uiOverlay = document.getElementById('ui-overlay');
+        const btnPlayPause = document.getElementById('btn-play-pause');
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+        const vinylDisc = document.getElementById('vinyl-disc');
+
+        let ytPlayer = null;
+        let isPlaying = false;
+        let playRequested = false;
+
+        // Crea el reproductor YouTube en el contenedor oculto
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('youtube-player', {
+                height: '0',
+                width: '0',
+                videoId: 'Le2J_EmFe2c',
+                playerVars: { 'controls': 0, 'rel': 0, 'modestbranding': 1, 'iv_load_policy': 3 },
+                events: {
+                    'onReady': function(event) {
+                        // ready
+                        // Asegurar que el player no esté silenciado y gestionar reproducción pendiente
+                        try { event.target.unMute && event.target.unMute(); } catch(e){}
+                        if (playRequested) {
+                            event.target.playVideo();
+                            isPlaying = true;
+                            iconPlay.classList.add('hidden');
+                            iconPause.classList.remove('hidden');
+                            vinylDisc.classList.add('rotate-vinyl');
+                            playRequested = false;
+                        }
+                    },
+                    'onStateChange': function(e) {
+                        // si termina la reproducción
+                        if (e.data === YT.PlayerState.ENDED) {
+                            isPlaying = false;
+                            iconPlay.classList.remove('hidden');
+                            iconPause.classList.add('hidden');
+                            vinylDisc.classList.remove('rotate-vinyl');
+                        }
+                    }
+                }
+            });
+        }
+
+        // Cargar la API IFrame de YouTube
+        (function loadYouTubeAPI(){
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.head.appendChild(tag);
+        })();
+
+        function toggleAudio() {
+            if (!ytPlayer) {
+                // Player aún no creado; marcar petición para reproducir cuando esté listo
+                playRequested = true;
+                return;
+            }
+            if (isPlaying) {
+                ytPlayer.pauseVideo();
+                iconPlay.classList.remove('hidden');
+                iconPause.classList.add('hidden');
+                vinylDisc.classList.remove('rotate-vinyl');
+            } else {
+                try { ytPlayer.unMute && ytPlayer.unMute(); } catch(e){}
+                ytPlayer.playVideo();
+                iconPlay.classList.add('hidden');
+                iconPause.classList.remove('hidden');
+                vinylDisc.classList.add('rotate-vinyl');
+            }
+            isPlaying = !isPlaying;
+        }
+
+        btnEnter.addEventListener('click', () => {
+            introScreen.classList.add('opacity-0', 'pointer-events-none');
+            uiOverlay.classList.remove('opacity-0');
+            toggleAudio();
+        });
+
+        btnPlayPause.addEventListener('click', toggleAudio);
+
+        // --- BUCLE DE ANIMACIÓN (60 FPS) ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+
+            // Rotación suave del campo de estrellas
+            stars.rotation.y = elapsedTime * 0.02;
+
+            // Movimiento flotante de los girasoles (efecto gravedad cero)
+            interactiveObjects.forEach((obj) => {
+                const offset = obj.userData.floatOffset;
+                obj.position.y = obj.userData.initialY + Math.sin(elapsedTime * 1.5 + offset) * 0.4;
+                obj.rotation.y += 0.005;
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- RESPONSIVIDAD (REDIMENSIONADO DE VENTANA) ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
