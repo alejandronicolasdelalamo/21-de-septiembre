@@ -1,0 +1,421 @@
+/* ==========================================================================
+   Mi Universo Entero · 21 de septiembre
+
+   La página tiene tres estados, marcados con clases en <html>:
+     (ninguna)        sin JavaScript: galería de fotos normal
+     .js              hay JavaScript: se muestra la pantalla de carga
+     .con-universo    la escena 3D está en marcha: la galería se oculta
+     .sin-webgl       la escena no pudo arrancar: vuelve la galería
+   Además: .listo (terminó la carga) y .viendo (hay una foto ampliada).
+   ========================================================================== */
+
+:root {
+  --espacio: #05030f;
+  --oro: #ffcf40;
+  --oro-claro: #ffe9a8;
+  --lila: #d6cfff;
+  --violeta: #8a6cff;
+  --papel: #fbf5e9;
+  --tinta: #3a2412;
+
+  --titular: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --texto: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --borde: clamp(20px, 4.5vw, 64px);
+  --suave: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--espacio);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(60vmax 60vmax at 80% -10%, rgba(138, 108, 255, 0.22), transparent 70%),
+    radial-gradient(50vmax 50vmax at 0% 100%, rgba(255, 157, 46, 0.12), transparent 70%),
+    var(--espacio);
+  color: var(--lila);
+  font-family: var(--texto);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+p,
+figure {
+  margin: 0;
+}
+
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 2px solid var(--oro);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------- cabecera */
+
+.cabecera {
+  padding: calc(clamp(28px, 6vh, 64px) + env(safe-area-inset-top, 0px)) var(--borde) 0;
+  max-width: 46rem;
+}
+
+.titulo {
+  font-family: var(--titular);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.3rem, 1.3rem + 4.6vw, 4.8rem);
+  font-variation-settings: 'opsz' 144;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--oro-claro);
+  text-shadow: 0 0 34px rgba(255, 207, 64, 0.35), 0 2px 18px rgba(5, 3, 15, 0.8);
+}
+
+.titulo__letra {
+  display: inline-block;
+  white-space: pre;
+}
+
+.dedicatoria {
+  margin-top: clamp(12px, 2vh, 22px);
+  max-width: 34rem;
+  font-size: clamp(0.98rem, 0.92rem + 0.3vw, 1.14rem);
+  text-shadow: 0 1px 14px rgba(5, 3, 15, 0.95), 0 0 3px rgba(5, 3, 15, 0.9);
+  text-wrap: pretty;
+}
+
+/* ---------------------------------------- galería (sin JavaScript o sin WebGL) */
+
+.recuerdos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: clamp(20px, 3vw, 36px);
+  padding: clamp(32px, 6vh, 64px) var(--borde) clamp(48px, 8vh, 96px);
+  max-width: 1200px;
+}
+
+.recuerdo {
+  padding: 14px 14px 0;
+  border-radius: 6px;
+  background: linear-gradient(#fdf8ee, #f0e5d0);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  color: var(--tinta);
+  rotate: -1.2deg;
+}
+
+.recuerdo:nth-child(even) {
+  rotate: 1.4deg;
+}
+
+.recuerdo:nth-child(3n) {
+  rotate: -0.4deg;
+}
+
+.recuerdo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  outline: 1px solid rgba(58, 36, 18, 0.2);
+  outline-offset: -1px;
+}
+
+.recuerdo figcaption {
+  display: grid;
+  place-items: center;
+  min-height: 4.4em;
+  padding: 10px 6px 14px;
+  font-family: var(--titular);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.06rem;
+  line-height: 1.3;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* Elementos que solo existen con la escena 3D. */
+.universo,
+.controles,
+.carga {
+  display: none;
+}
+
+/* ------------------------------------------------------- pantalla de carga */
+
+.js:not(.sin-webgl) .carga {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  background: var(--espacio);
+  color: var(--oro-claro);
+  font-family: var(--titular);
+  font-style: italic;
+  font-size: 1.1rem;
+  transition: opacity 0.9s ease, visibility 0.9s;
+}
+
+.carga__flor {
+  width: 64px;
+  height: 64px;
+  animation: girar 6s linear infinite;
+}
+
+.listo .carga {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@keyframes girar {
+  to {
+    rotate: 1turn;
+  }
+}
+
+/* --------------------------------------------------------------- escena 3D */
+
+.con-universo,
+.con-universo body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.con-universo body {
+  background: var(--espacio);
+  overscroll-behavior: none;
+}
+
+.con-universo main {
+  display: none;
+}
+
+.con-universo .universo {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+
+.con-universo .universo:active {
+  cursor: grabbing;
+}
+
+.con-universo .cabecera {
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+/* Entrada: las letras del título se enfocan una a una mientras se forma la flor. */
+.con-universo .titulo__letra {
+  opacity: 0;
+  filter: blur(10px);
+  translate: 0 0.25em;
+}
+
+.con-universo .dedicatoria,
+.con-universo .controles {
+  opacity: 0;
+}
+
+.con-universo.listo .titulo__letra {
+  opacity: 1;
+  filter: none;
+  translate: none;
+  transition: opacity 0.9s var(--suave), filter 0.9s var(--suave), translate 0.9s var(--suave);
+  transition-delay: calc(var(--i) * 55ms + 900ms);
+}
+
+.con-universo.listo .dedicatoria {
+  opacity: 1;
+  transition: opacity 1.4s ease 2.3s;
+}
+
+.con-universo.listo .controles {
+  opacity: 1;
+  transition: opacity 1.2s ease 3.8s;
+}
+
+/* -------------------------------------------------------------- controles */
+
+.con-universo .controles {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 var(--borde) calc(clamp(18px, 4vh, 36px) + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+
+.pista {
+  font-size: 0.92rem;
+  color: rgba(214, 207, 255, 0.85);
+  text-shadow: 0 1px 10px var(--espacio);
+  transition: opacity 0.8s ease;
+}
+
+.pista.oculta {
+  opacity: 0;
+}
+
+.boton,
+.visor {
+  border: 1px solid rgba(255, 207, 64, 0.45);
+  background: rgba(10, 6, 26, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.boton {
+  flex: none;
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  color: var(--oro-claro);
+  font: 500 1rem var(--texto);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.boton:hover {
+  background: var(--oro);
+  border-color: var(--oro);
+  color: #1c1202;
+}
+
+@media (max-width: 640px) {
+  .con-universo .controles {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}
+
+/* ------------------------------------------------------------------ visor */
+
+.visor[hidden] {
+  display: none;
+}
+
+.visor {
+  position: fixed;
+  left: 50%;
+  bottom: calc(clamp(18px, 4vh, 36px) + env(safe-area-inset-bottom, 0px));
+  z-index: 3;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 999px;
+  animation: subir 0.5s var(--suave) backwards;
+}
+
+/* El contenedor recibe el foco solo para situar el teclado; no es un control. */
+.visor:focus {
+  outline: none;
+}
+
+.visor__boton {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--oro-claro);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.visor__boton:hover {
+  background: rgba(255, 207, 64, 0.18);
+}
+
+.visor__boton svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.visor__boton--cerrar {
+  margin-left: 4px;
+  border-left: 1px solid rgba(255, 207, 64, 0.25);
+  border-radius: 0 50% 50% 0;
+}
+
+.visor__cuenta {
+  min-width: 5.2em;
+  color: var(--papel);
+  font-size: 0.98rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+@keyframes subir {
+  from {
+    opacity: 0;
+    translate: -50% 14px;
+  }
+}
+
+.viendo .cabecera,
+.viendo .controles {
+  opacity: 0 !important;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s !important;
+}
+
+/* ------------------------------------------------------ movimiento reducido */
+
+@media (prefers-reduced-motion: reduce) {
+  .carga__flor,
+  .visor {
+    animation: none;
+  }
+
+  .con-universo.listo .titulo__letra,
+  .con-universo.listo .dedicatoria,
+  .con-universo.listo .controles {
+    transition-duration: 0.01s;
+    transition-delay: 0s;
+  }
+}
