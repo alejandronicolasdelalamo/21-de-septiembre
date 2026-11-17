@@ -16,7 +16,7 @@ Escena 3D interactiva con Three.js, sin paso de compilación.
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-<img src="docs/portada.jpg" alt="La galaxia-girasol con las fotos en órbita a su alrededor" width="880" />
+<img src="docs/portada.jpg" alt="La galaxia-girasol con las fotos en órbita a su alrededor (capturas de la demo con fotos de ejemplo)" width="880" />
 
 **[Ver la demo](https://alejandronicolasdelalamo.github.io/21-de-septiembre/)** · **[Ver la demo con fotos de ejemplo](https://alejandronicolasdelalamo.github.io/21-de-septiembre/demo/)**
 
