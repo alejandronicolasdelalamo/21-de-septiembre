@@ -73,6 +73,7 @@ export class Universo {
     this.mezclaFoco = 0;
     this.sobre = -1; // foto bajo el cursor
     this.tarjetas = [];
+    this.radioAnillo = 16;
     this.conBloom = true;
     this._muestras = { suma: 0, n: 0, rebajas: 0 };
     this._previo = 0;
@@ -234,6 +235,8 @@ export class Universo {
     const anisotropia = this.renderer.capabilities.getMaxAnisotropy();
     const resolucion = esTactil ? 512 : 1024;
     const total = recuerdos.length;
+    // El anillo crece con el número de fotos para que quepan sin amontonarse.
+    this.radioAnillo = Math.max(16, (total * 5.6) / (Math.PI * 2));
 
     recuerdos.forEach((recuerdo, i) => {
       const imagen = imagenes[i];
@@ -245,11 +248,15 @@ export class Universo {
         geometria,
         new THREE.MeshBasicMaterial({ map: textura, transparent: true, toneMapped: false, depthWrite: false }),
       );
-      const angulo = (i / total) * Math.PI * 2 + 0.35;
-      const radio = 16 + this.rng() * 3;
+      // El ángulo decrece con el índice: así, vista desde fuera, la foto
+      // siguiente queda siempre a la derecha de la actual.
+      const angulo = 0.35 - (i / total) * Math.PI * 2;
+      const radio = this.radioAnillo + this.rng() * 3;
+      // Dos alturas alternas para que las vecinas no se tapen entre sí.
+      const altura = (i % 2 ? 4.6 : 0.4) + this.rng() * 1.6;
       tarjeta.userData = {
         indice: i,
-        base: new THREE.Vector3(Math.cos(angulo) * radio, 1 + this.rng() * 4.5, Math.sin(angulo) * radio),
+        base: new THREE.Vector3(Math.cos(angulo) * radio, altura, Math.sin(angulo) * radio),
         fase: this.rng() * Math.PI * 2,
         ladeo: (this.rng() - 0.5) * 0.16,
         escala: 0,
@@ -326,7 +333,8 @@ export class Universo {
   /** Distancia desde la que la flor entera cabe en pantalla. */
   _radioBase() {
     const tan = Math.tan(THREE.MathUtils.degToRad(FOV / 2));
-    return clamp(Math.max(38, 12.5 / (tan * this.camara.aspect)), 38, 70);
+    const minimo = Math.max(38, this.radioAnillo + 22);
+    return clamp(Math.max(minimo, 12.5 / (tan * this.camara.aspect)), minimo, 70);
   }
 
   /** Distancia a la que una polaroid llena la pantalla dejando sitio a los controles. */
@@ -456,7 +464,7 @@ export class Universo {
 
       // Las del lado lejano se desvanecen; al enfocar una, el resto se apaga.
       const distancia = tarjeta.position.distanceTo(this.camara.position);
-      const cercania = clamp((this.orbita.radio + 19 - distancia) / 38);
+      const cercania = clamp((this.orbita.radio + this.radioAnillo + 3 - distancia) / (this.radioAnillo * 2 + 6));
       const base = lerp(0.3, 1, cercania);
       tarjeta.material.opacity = lerp(base * (1 - this.mezclaFoco * 0.8), 1, d.foco);
       tarjeta.renderOrder = esFoco ? 1 : 0;

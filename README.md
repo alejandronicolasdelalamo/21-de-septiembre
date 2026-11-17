@@ -26,11 +26,11 @@ Escena 3D interactiva con Three.js, sin paso de compilación.
 
 ## Qué es
 
-El 21 de septiembre es el día de regalar flores amarillas. Esta página regala un jardín entero: más de 20 000 estrellas que empiezan dispersas por el espacio y se van juntando hasta formar un girasol del tamaño de una galaxia. A su alrededor flotan girasoles pequeños y nueve polaroids con fotos y su dedicatoria.
+El 21 de septiembre es el día de regalar flores amarillas. Esta página regala un jardín entero: más de 20 000 estrellas que empiezan dispersas por el espacio y se van juntando hasta formar un girasol del tamaño de una galaxia. A su alrededor flotan girasoles pequeños y 23 polaroids con fotos y su dedicatoria.
 
 - **Arrastra** (o desliza) para orbitar alrededor de la flor, y usa la **rueda** o el **pellizco** para acercarte.
 - **Pulsa una foto** y la cámara vuela hasta ella; el resto del universo se atenúa.
-- Con una foto abierta, pasa a la siguiente con las **flechas**, los botones o **deslizando**; **Esc** vuelve a la vista general.
+- Con una foto abierta, pasa a la siguiente con las **flechas**, los botones o **deslizando**: la siguiente es siempre la que queda a su derecha. **Esc** vuelve a la vista general.
 
 <table>
   <tr>
@@ -78,7 +78,7 @@ Además, todo se puede recorrer con teclado, los botones tienen nombre accesible
 Todo el contenido está en [`index.html`](index.html), marcado con ✏️:
 
 - **Título y dedicatoria:** el `<h1>` y el párrafo de la cabecera.
-- **Fotos:** cada `<figure class="recuerdo">` es una polaroid. Para añadir, quitar o cambiar una basta con editar esa lista; la escena reparte en órbita las que haya.
+- **Fotos:** cada `<figure class="recuerdo">` es una polaroid. Para añadir, quitar o cambiar una basta con editar esa lista; la escena reparte en órbita las que haya, en ese orden (la siguiente queda a la derecha), y agranda el anillo si hacen falta más huecos.
 
 ```html
 <figure class="recuerdo">
@@ -87,7 +87,7 @@ Todo el contenido está en [`index.html`](index.html), marcado con ✏️:
 </figure>
 ```
 
-Las fotos se recortan a cuadrado desde el centro; 640 × 640 px es suficiente.
+Las fotos se recortan a cuadrado desde el centro; entre 640 y 960 px de lado es suficiente.
 
 ## Ejecutarlo en local
 
