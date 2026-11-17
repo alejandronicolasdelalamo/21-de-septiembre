@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mi Universo Entero · demo</title>
+  <meta name="description" content="Una galaxia con forma de girasol para el 21 de septiembre, con nuestros recuerdos flotando entre estrellas.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#05030f">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Mi Universo Entero">
+  <meta property="og:description" content="Una galaxia con forma de girasol para el 21 de septiembre.">
+  <meta property="og:image" content="https://alejandronicolasdelalamo.github.io/21-de-septiembre/docs/portada-demo.jpg">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/estilos.css">
+
+  <!--
+    Mejora progresiva: sin JavaScript (o sin WebGL) la página es una galería
+    normal de fotos. Este guion marca que hay JavaScript y, si la escena 3D
+    no llega a arrancar por cualquier motivo, devuelve la galería.
+  -->
+  <script>
+    (function () {
+      var raiz = document.documentElement;
+      raiz.classList.add('js');
+      function volverAGaleria() {
+        if (!raiz.classList.contains('con-universo')) raiz.classList.add('sin-webgl');
+      }
+      window.addEventListener('error', volverAGaleria);
+      setTimeout(volverAGaleria, 15000);
+    })();
+  </script>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "../vendor/three/three.module.min.js",
+        "three/addons/": "../vendor/three/addons/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas class="universo" id="universo" aria-hidden="true"></canvas>
+
+  <header class="cabecera">
+    <!-- ✏️ Título y dedicatoria: cámbialos aquí. -->
+    <h1 class="titulo" id="titulo">Mi Universo Entero</h1>
+    <p class="dedicatoria">Hoy es 21 de septiembre, el día de regalar girasoles. Aquí tienes un jardín entero flotando entre estrellas, con cada recuerdo nuestro brillando como uno más 🌻💛</p>
+  </header>
+
+  <main>
+    <!--
+      ✏️ Las fotos: cada <figure> es un recuerdo. La escena 3D lee esta lista,
+      así que para añadir, quitar o cambiar una foto basta con editarla aquí.
+      El orden de la lista es el orden en que giran: la siguiente queda a la derecha.
+    -->
+    <section class="recuerdos" id="recuerdos" aria-label="Nuestros recuerdos">
+      <figure class="recuerdo">
+        <img src="fotos/01.jpg" alt="Un campo de girasoles al atardecer" width="800" height="800" loading="lazy">
+        <figcaption>Donde empezó todo: un campo entero de girasoles 🌻</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/02.jpg" alt="El sol poniéndose sobre el mar" width="800" height="800" loading="lazy">
+        <figcaption>El atardecer más bonito del verano 🌅</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/03.jpg" alt="Montañas azules bajo un cielo claro" width="800" height="800" loading="lazy">
+        <figcaption>Subimos hasta arriba solo por estas vistas ⛰️</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/04.jpg" alt="Una noche de luna llena sobre las colinas" width="800" height="800" loading="lazy">
+        <figcaption>La luna también quería venir con nosotros 🌕</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/05.jpg" alt="Una playa con el agua turquesa" width="800" height="800" loading="lazy">
+        <figcaption>Agua turquesa y nada más que hacer 🌊</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/06.jpg" alt="La ciudad iluminada al anochecer" width="800" height="800" loading="lazy">
+        <figcaption>Paseo nocturno por la ciudad ✨</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/07.jpg" alt="Una aurora boreal sobre las montañas" width="800" height="800" loading="lazy">
+        <figcaption>Un cielo que parecía de otro planeta 💚</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/08.jpg" alt="Un bosque de pinos entre la niebla" width="800" height="800" loading="lazy">
+        <figcaption>Perdidos (a propósito) en el bosque 🌲</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/09.jpg" alt="Dunas del desierto con el sol bajo" width="800" height="800" loading="lazy">
+        <figcaption>Arena hasta donde alcanza la vista 🏜️</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/10.jpg" alt="Un lago que refleja las montañas al amanecer" width="800" height="800" loading="lazy">
+        <figcaption>Madrugar mereció la pena 🌄</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/11.jpg" alt="Luces de la calle tras una ventana con lluvia" width="800" height="800" loading="lazy">
+        <figcaption>Tarde de lluvia, manta y película ☔</figcaption>
+      </figure>
+      <figure class="recuerdo">
+        <img src="fotos/12.jpg" alt="Un girasol de cerca" width="800" height="800" loading="lazy">
+        <figcaption>Un girasol para cada día del año 💛</figcaption>
+      </figure>
+    </section>
+  </main>
+
+  <div class="controles" id="controles">
+    <p class="pista" id="pista"></p>
+    <button class="boton" id="verRecuerdos" type="button">Ver recuerdos</button>
+  </div>
+
+  <div class="visor" id="visor" role="group" aria-label="Recuerdo ampliado" tabindex="-1" hidden>
+    <button class="visor__boton" id="anterior" type="button" aria-label="Recuerdo anterior">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <p class="visor__cuenta" id="cuenta" aria-hidden="true"></p>
+    <button class="visor__boton" id="siguiente" type="button" aria-label="Recuerdo siguiente">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+    <button class="visor__boton visor__boton--cerrar" id="cerrar" type="button" aria-label="Volver al universo">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <p class="solo-lectores" id="anuncio" aria-live="polite"></p>
+
+  <div class="carga" id="carga" role="status">
+    <svg class="carga__flor" viewBox="-50 -50 100 100" aria-hidden="true">
+      <g fill="#ffcf40">
+        <ellipse rx="7" ry="20" cy="-27"/>
+        <ellipse rx="7" ry="20" cy="-27" transform="rotate(45)"/>
+        <ellipse rx="7" ry="20" cy="-27" transform="rotate(90)"/>
+        <ellipse rx="7" ry="20" cy="-27" transform="rotate(135)"/>
+        <ellipse rx="7" ry="20" cy="-27" transform="rotate(180)"/>
+        <ellipse rx="7" ry="20" cy="-27" transform="rotate(225)"/>
+        <ellipse rx="7" ry="20" cy="-27" transform="rotate(270)"/>
+        <ellipse rx="7" ry="20" cy="-27" transform="rotate(315)"/>
+      </g>
+      <circle r="13" fill="#6e3a10"/>
+    </svg>
+    <p>Sembrando girasoles…</p>
+  </div>
+
+  <script type="module" src="../js/main.js"></script>
+</body>
+</html>

@@ -18,7 +18,7 @@ Escena 3D interactiva con Three.js, sin paso de compilación.
 
 <img src="docs/portada.jpg" alt="La galaxia-girasol con las fotos en órbita a su alrededor" width="880" />
 
-**[Ver la demo](https://alejandronicolasdelalamo.github.io/21-de-septiembre/)**
+**[Ver la demo](https://alejandronicolasdelalamo.github.io/21-de-septiembre/)** · **[Ver la demo con fotos de ejemplo](https://alejandronicolasdelalamo.github.io/21-de-septiembre/demo/)**
 
 </div>
 
@@ -72,6 +72,10 @@ Las fotos son HTML normal (`<figure>` con su `alt` y su `<figcaption>`), y la es
 | «Reducir movimiento» activado | La galaxia ya formada, sin giro automático ni transiciones de cámara |
 
 Además, todo se puede recorrer con teclado, los botones tienen nombre accesible y cada foto que se abre se anuncia a los lectores de pantalla con su descripción y su dedicatoria.
+
+## Demo con fotos de ejemplo
+
+[`demo/`](demo/) es la misma página con 12 paisajes ilustrados en lugar de nuestras fotos, para enseñarla sin datos personales. Reutiliza el mismo CSS, JavaScript y Three.js; solo cambian la lista de recuerdos y la carpeta `demo/fotos/`.
 
 ## Personalizar
 
